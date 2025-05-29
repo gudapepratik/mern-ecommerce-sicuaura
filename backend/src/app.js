@@ -38,25 +38,4 @@ app.use('/api/users',userRouter)
 import productRouter from './routes/product.routes.js'
 app.use('/api/products',productRouter)
 
-// app.use((err, req, res, next) => {
-//     if (err instanceof ApiError) {
-//         const { statusCode, message, errors} = err;
-
-//         res.status(statusCode).json({
-//             success: false,
-//             message,
-//             errors,
-//             stack: undefined,
-//         });
-//     } else {
-//         const { statusCode, message, errors} = err;
-//         console.log(err, "asfasagaga")
-//         res.status(500).json({
-//             success: false,
-//             errors,
-//             message
-//         });
-//     }
-// });
-
 export {app}
