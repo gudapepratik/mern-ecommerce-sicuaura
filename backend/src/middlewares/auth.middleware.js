@@ -6,6 +6,7 @@ export const verifyJWT = async (req, res, next) => {
     try {
         // 1. get the accesstoken from cookie
         const token = req.cookies?.accessToken;
+        console.log(token)
 
         if (!token) throw new ApiError(401, "Unauthorized request");
 
@@ -28,6 +29,7 @@ export const verifyJWT = async (req, res, next) => {
         // 5. pass control to next middleware
         next();
     } catch (error) {
+        console.log(error)
         if (error.name === "TokenExpiredError") {
             return res
                 .status(401)
