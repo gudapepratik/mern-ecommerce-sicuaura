@@ -1,0 +1,193 @@
+import { useState } from "react";
+import { NavLink, useNavigate } from "react-router";
+import authServices from "../api/services/auth.services";
+import { useDispatch } from "react-redux";
+import { login } from "../store/authSlice";
+
+function LoginPage() {
+    // State to manage form data, errors, and loading state
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+    });
+    const [errors, setErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    // Method to handle input changes
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors((prev) => ({
+                ...prev,
+                [name]: "",
+            }));
+        }
+    };
+
+    // Method to validate form data
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.email) newErrors.email = "Email is required";
+        else if (!/\S+@\S+\.\S+/.test(formData.email))
+            newErrors.email = "Email is invalid";
+
+        if (!formData.password) newErrors.password = "Password is required";
+
+        return newErrors;
+    };
+
+    // Method to handle form submission
+    const handleSubmit = async (e) => {
+        // Prevent default form submission
+        // to avoid page reload
+        e.preventDefault();
+        setIsLoading(true);
+
+        // validate the form data
+        // if there are errors, set the errors state and return
+        const newErrors = validateForm();
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            // 1. call the api to create a new account
+            const userData = await authServices.loginUser(formData);
+
+            console.log("New Login", userData.data.data?.user);
+            
+            // 2. dispatch the login action to update the user state in redux store
+            dispatch(login(userData.data.data?.user));
+
+            // 3. notify the user that user is logged in successfully
+            alert(`User Logged In Successfully, Access Token is ${userData.data.data?.accessToken}`);
+
+            // 4. navigate to the Home page after a timeout of 2 sec
+            setTimeout(() => {
+                navigate("/");
+            }, 2000);
+        } catch (error) {
+            console.error("Error while login", error);
+            // Handle error (alert the user)
+            alert("Error logging: " + error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full">
+                <div className="bg-white shadow-xl rounded-lg overflow-hidden">
+                    {/* Header */}
+                    <div className="px-6 py-8 text-center border-b border-gray-200">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                            Welcome Back
+                        </h2>
+                        <p className="text-gray-600">
+                            Sign in to your account to continue shopping
+                        </p>
+                    </div>
+
+                    {/* Form */}
+                    <div className="px-6 py-8">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Email Field */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Email Address
+                                    <span className="text-red-500 ml-1">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors outline-none ${
+                                        errors.email
+                                            ? "border-red-500"
+                                            : "border-gray-300"
+                                    }`}
+                                    required
+                                />
+                                {errors.email && (
+                                    <p className="text-sm text-red-600">
+                                        {errors.email}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Password Field */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Password
+                                    <span className="text-red-500 ml-1">*</span>
+                                </label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    placeholder="Create a password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors outline-none ${
+                                        errors.password
+                                            ? "border-red-500"
+                                            : "border-gray-300"
+                                    }`}
+                                    required
+                                />
+                                {errors.password && (
+                                    <p className="text-sm text-red-600">
+                                        {errors.password}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                className="w-full bg-rose-500 hover:bg-rose-600 text-white py-3 px-4 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <div className="flex items-center justify-center">
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        Signing In...
+                                    </div>
+                                ) : (
+                                    "Sign In"
+                                )}
+                            </button>
+                        </form>
+
+                        {/* Sign In Link */}
+                        <div className="mt-6 text-center">
+                            <p className="text-sm text-gray-600">
+                                Don't have an account?{" "}
+                                <NavLink
+                                    to="/register"
+                                    className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
+                                >
+                                    Sign up here
+                                </NavLink>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default LoginPage;
