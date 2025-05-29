@@ -7,7 +7,7 @@ const app = express()
 // just temporary
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || origin === 'http://localhost:5173' || origin === "https://mern-ecommerce-sicuaura.onrender.com") {
+        if (!origin || origin === 'http://localhost:5173' || origin === "https://mern-ecommerce-sicuaura.vercel.app") {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
